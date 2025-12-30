@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kern-engine"
+version = "0.1.0"
+description = "A deep-reloading development engine for Python"
+authors = [
+    {name = "Emmanuel Obolo Oluwapelumi"},
+    {name = "Abiodun Kumuyi"}
+]
+dependencies = []
+
+[project.scripts]
+kern = "core.main:main"
+
+[tool.setuptools]
+# Updated: 'tracker' replaces 'dependency_tracker'
+packages = ["core", "tracker", "hot_reload", "utils"]

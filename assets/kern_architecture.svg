@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400">
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#64748b" />
+    </marker>
+  </defs>
+  <rect width="800" height="400" fill="#f8fafc" rx="10" />
+  
+  <!-- Layer 1: The Eyes -->
+  <g transform="translate(50, 100)">
+    <rect width="200" height="200" rx="10" fill="#e0f2fe" stroke="#0ea5e9" stroke-width="2" />
+    <text x="100" y="30" text-anchor="middle" font-family="sans-serif" font-weight="bold" fill="#0369a1" font-size="18">Layer 1: The Eyes</text>
+    <text x="100" y="60" text-anchor="middle" font-family="sans-serif" fill="#0369a1" font-size="14">Tracker &amp; Watcher</text>
+    <text x="100" y="100" text-anchor="middle" font-family="sans-serif" fill="#334155" font-size="12">AST Static Analysis</text>
+    <text x="100" y="120" text-anchor="middle" font-family="sans-serif" fill="#334155" font-size="12">Absolute Paths</text>
+    <text x="100" y="140" text-anchor="middle" font-family="sans-serif" fill="#334155" font-size="12">Error Resilience</text>
+  </g>
+
+  <!-- Arrow 1 -->
+  <line x1="250" y1="200" x2="290" y2="200" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)" />
+
+  <!-- Layer 2: The Muscle -->
+  <g transform="translate(300, 100)">
+    <rect width="200" height="200" rx="10" fill="#fef9c3" stroke="#eab308" stroke-width="2" />
+    <text x="100" y="30" text-anchor="middle" font-family="sans-serif" font-weight="bold" fill="#854d0e" font-size="18">Layer 2: The Muscle</text>
+    <text x="100" y="60" text-anchor="middle" font-family="sans-serif" fill="#854d0e" font-size="14">Reloader</text>
+    <text x="100" y="100" text-anchor="middle" font-family="sans-serif" fill="#334155" font-size="12">Recursive Mapping</text>
+    <text x="100" y="120" text-anchor="middle" font-family="sans-serif" fill="#334155" font-size="12">Surgical Eviction</text>
+    <text x="100" y="140" text-anchor="middle" font-family="sans-serif" fill="#334155" font-size="12">Module cleanup</text>
+  </g>
+
+  <!-- Arrow 2 -->
+  <line x1="500" y1="200" x2="540" y2="200" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)" />
+
+  <!-- Layer 3: The Heart -->
+  <g transform="translate(550, 100)">
+    <rect width="200" height="200" rx="10" fill="#fee2e2" stroke="#ef4444" stroke-width="2" />
+    <text x="100" y="30" text-anchor="middle" font-family="sans-serif" font-weight="bold" fill="#b91c1c" font-size="18">Layer 3: The Heart</text>
+    <text x="100" y="60" text-anchor="middle" font-family="sans-serif" fill="#b91c1c" font-size="14">Engine</text>
+    <text x="100" y="100" text-anchor="middle" font-family="sans-serif" fill="#334155" font-size="12">Monitoring Loop</text>
+    <text x="100" y="120" text-anchor="middle" font-family="sans-serif" fill="#334155" font-size="12">Debounce Timer</text>
+    <text x="100" y="140" text-anchor="middle" font-family="sans-serif" fill="#334155" font-size="12">Crash Recovery</text>
+  </g>
+
+  <text x="400" y="50" text-anchor="middle" font-family="sans-serif" font-weight="bold" font-size="24" fill="#0f172a">Kern Architecture</text>
+</svg>
