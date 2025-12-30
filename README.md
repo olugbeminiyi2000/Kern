@@ -68,4 +68,5 @@ pip install -e .
 
 ---
 **Architects**: Emmanuel Obolo Oluwapelumi & Abiodun Kumuyi
+
 **Status**: Active v0.1.0
