@@ -48,6 +48,25 @@ cd Kern
 pip install -e .
 ```
 
+### Installation Troubleshooting
+If you encounter an error regarding `build_editable` or missing hooks (often on older environments):
+
+1.  **Clear old build artifacts**:
+    ```bash
+    rm -rf *.egg-info
+    # or manually delete the .egg-info folder
+    ```
+
+2.  **Upgrade build tools**:
+    ```bash
+    pip install --upgrade pip setuptools wheel
+    ```
+
+3.  **Re-install**:
+    ```bash
+    pip install -e .
+    ```
+
 ### Usage
 1.  **Create a python script** (e.g., `app.py`):
     ```python

@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -16,5 +16,4 @@ dependencies = []
 kern = "core.main:main"
 
 [tool.setuptools]
-# Updated: 'tracker' replaces 'dependency_tracker'
 packages = ["core", "tracker", "hot_reload", "utils"]
