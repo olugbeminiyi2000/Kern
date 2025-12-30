@@ -51,8 +51,6 @@ pip install -e .
 ### Usage
 1.  **Create a python script** (e.g., `app.py`):
     ```python
-    import time
-
     def run():
         print("Hello from kern!")
     ```
