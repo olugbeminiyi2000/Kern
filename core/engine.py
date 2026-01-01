@@ -1,8 +1,23 @@
+"""
+Kern Engine - The core hot-reloading engine.
+
+This module contains the main Engine class that orchestrates file watching,
+module reloading, and user code execution. It provides surgical script
+reloading capabilities for Python applications.
+
+Example:
+    >>> from core.engine import Engine
+    >>> engine = Engine("my_script.py")
+    >>> engine.start()
+"""
+
 import importlib
 import sys
 import traceback
 import time
 from pathlib import Path
+from typing import Optional
+from types import ModuleType
 
 # --- BOOTSTRAP: Root path injection ---
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -14,25 +29,65 @@ from tracker.dependency import DependencyTracker
 from tracker.watcher import FileWatcher
 from hot_reload.reloader import ModuleReloader
 
-class Engine:
-    def __init__(self, entry_file):
-        self.tracker = DependencyTracker(entry_file)
-        self.reloader = ModuleReloader(self.tracker)
-        self.watcher = FileWatcher(self.tracker)
-        self.entry_name = self.tracker.entry_point.stem
-        self.user_module = None
-        self.log_file = "engine_error.log"
-        self.DEBOUNCE_SECONDS = 0.5 
 
-    def _log_error(self, error_traceback):
-        """Overwrites the log file and alerts the user."""
+class Engine:
+    """
+    The main hot-reloading engine for Kern.
+    
+    This class coordinates between the DependencyTracker, FileWatcher, and
+    ModuleReloader to provide seamless hot-reloading of Python scripts.
+    
+    Attributes:
+        tracker: DependencyTracker instance for mapping project dependencies.
+        reloader: ModuleReloader instance for evicting stale modules.
+        watcher: FileWatcher instance for detecting file changes.
+        entry_name: The stem name of the entry point file.
+        user_module: The currently loaded user module, or None if not loaded.
+        log_file: Path to the error log file.
+        DEBOUNCE_SECONDS: Time to wait after a file change before reloading.
+    
+    Example:
+        >>> engine = Engine("app.py")
+        >>> engine.start()  # Starts the monitoring loop
+    """
+    
+    def __init__(self, entry_file: str | Path) -> None:
+        """
+        Initialize the Engine with an entry point file.
+        
+        Args:
+            entry_file: Path to the Python file to monitor and execute.
+        """
+        self.tracker: DependencyTracker = DependencyTracker(entry_file)
+        self.reloader: ModuleReloader = ModuleReloader(self.tracker)
+        self.watcher: FileWatcher = FileWatcher(self.tracker)
+        self.entry_name: str = self.tracker.entry_point.stem
+        self.user_module: Optional[ModuleType] = None
+        self.log_file: str = "engine_error.log"
+        self.DEBOUNCE_SECONDS: float = 0.5
+
+    def _log_error(self, error_traceback: str) -> None:
+        """
+        Write an error traceback to the log file and alert the user.
+        
+        Args:
+            error_traceback: The formatted traceback string to log.
+        """
         with open(self.log_file, "w", encoding="utf-8") as f:
             f.write(error_traceback)
         print(paint(f"\n[!] EXECUTION/RECONSTRUCTION FAILED", RED))
         print(paint(f"Detailed traceback saved to: {self.log_file}", YELLOW))
 
-    def _safe_import(self):
-        """Attempts to load the project. Returns True if successful."""
+    def _safe_import(self) -> bool:
+        """
+        Attempt to import or reload the user's module.
+        
+        This method handles both initial imports and subsequent reloads,
+        catching any exceptions to keep the engine alive.
+        
+        Returns:
+            True if the import was successful, False otherwise.
+        """
         try:
             script_dir = str(self.tracker.base_dir)
             if script_dir not in sys.path:
@@ -52,8 +107,21 @@ class Engine:
             self.user_module = None
             return False
 
-    def start(self):
-        """Starts the engine in non-blocking auto-reload mode."""
+    def start(self) -> None:
+        """
+        Start the engine in non-blocking auto-reload mode.
+        
+        This method enters an infinite loop that:
+        1. Monitors for file changes via the FileWatcher
+        2. Debounces rapid saves to avoid partial reloads
+        3. Evicts affected modules from sys.modules
+        4. Re-imports and executes the user's code
+        
+        The loop continues until interrupted by Ctrl+C.
+        
+        Raises:
+            KeyboardInterrupt: When the user presses Ctrl+C to stop.
+        """
         self.watcher.start()
         print(paint(f"\n--- Kern Engine Ignited (AUTO-MODE) ---", BLUE))
         print(paint(f"Monitoring: {self.entry_name}. Press Ctrl+C to stop.", BLUE))
@@ -89,8 +157,13 @@ class Engine:
             print(paint("\n[!] Engine stopped by user. Goodbye!", BLUE))
             sys.exit(0)
 
-    def _execute_user_code(self):
-        """Encapsulated execution of the user's run() function."""
+    def _execute_user_code(self) -> None:
+        """
+        Execute the user's run() function if it exists.
+        
+        This method safely calls the run() function from the user's module,
+        catching any exceptions to prevent crashes.
+        """
         if self.user_module:
             try:
                 if hasattr(self.user_module, "run"):
@@ -101,6 +174,7 @@ class Engine:
                     print(paint(f"\n[?] Warning: No 'run()' function found in {self.entry_name}.py", YELLOW))
             except Exception:
                 self._log_error(traceback.format_exc())
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
