@@ -8,6 +8,6 @@ Modules:
     main: The CLI entry point for the `kern` command.
 """
 
-from core.engine import Engine
+from core.engine import Engine  # noqa: F401
 
 __all__ = ["Engine"]

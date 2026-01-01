@@ -7,6 +7,6 @@ Modules:
     reloader: Surgical module eviction from sys.modules.
 """
 
-from hot_reload.reloader import ModuleReloader
+from hot_reload.reloader import ModuleReloader  # noqa: F401
 
 __all__ = ["ModuleReloader"]

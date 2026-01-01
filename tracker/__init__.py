@@ -8,7 +8,7 @@ Modules:
     watcher: Background thread for file change detection.
 """
 
-from tracker.dependency import DependencyTracker
-from tracker.watcher import FileWatcher
+from tracker.dependency import DependencyTracker  # noqa: F401
+from tracker.watcher import FileWatcher  # noqa: F401
 
 __all__ = ["DependencyTracker", "FileWatcher"]
