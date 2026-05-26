@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kern — Surgical Hot-Reloading for Python</title>
+  <meta name="description"
+    content="Kern watches your Python scripts, detects changes via static AST analysis, and reloads only the affected modules — without killing your process or losing terminal state.">
+  <link rel="icon" type="image/svg+xml" href="../assets/kern_logo.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+  <!-- ─── NAVBAR ─── -->
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a href="#" class="nav-logo">
+        <img src="../assets/kern_logo.svg" alt="Kern" width="26" height="26">
+        <span>kern</span>
+      </a>
+      <div class="nav-links">
+        <a href="#problem">Problem</a>
+        <a href="#quickstart">Quick Start</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#scanner">How It Works</a>
+        <a href="#cli">CLI</a>
+        <a href="https://github.com/olugbeminiyi2000/Kern" target="_blank" rel="noopener" class="nav-github"
+          aria-label="GitHub repository">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+          </svg>
+        </a>
+      </div>
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="nav-mobile-menu" id="mobile-menu" aria-hidden="true">
+      <a href="#problem">Problem</a>
+      <a href="#quickstart">Quick Start</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#scanner">How It Works</a>
+      <a href="#cli">CLI</a>
+      <a href="https://github.com/olugbeminiyi2000/Kern" target="_blank" rel="noopener" aria-label="GitHub repository">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <path
+            d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+        </svg>
+      </a>
+    </div>
+  </nav>
+
+  <!-- ─── HERO ─── -->
+  <section class="hero">
+    <div class="hero-glow" aria-hidden="true"></div>
+    <div class="hero-inner">
+      <div class="hero-badge">v0.1.0 &mdash; Early Release</div>
+      <h1 class="hero-title">Hot-reloading Engine<br>for Python.</h1>
+      <p class="hero-subtitle">
+        Point kern at your main script. It maps every file connected to it,
+        watches all of them, and reloads only what changed when any of them is saved, without restarting your process or
+        losing terminal state.
+      </p>
+      <div class="hero-terminal">
+        <div class="term-bar">
+          <span class="dot" style="background:#ff5f57"></span>
+          <span class="dot" style="background:#febc2e"></span>
+          <span class="dot" style="background:#28c840"></span>
+          <span class="term-bar-label">terminal</span>
+        </div>
+        <div class="term-body">
+          <span class="tl"><span class="t-prompt">$</span><span class="t-cmd"> kern run app.py</span></span>
+          <span class="tl t-accent"> &gt;&gt;&gt; Kern Engine Ignited...</span>
+          <span class="tl t-accent"> --- Kern Engine Ignited ---</span>
+          <span class="tl t-accent"> Monitoring: app. Press Ctrl+C to stop.</span>
+          <span class="tl t-success"> [*] app reconstructed successfully.</span>
+          <span class="tl">&nbsp;</span>
+          <span class="tl t-warn"> [v] Stable change detected. Attempting recovery...</span>
+          <span class="tl t-warn"> [Reloader] Evicting: utils.helper</span>
+          <span class="tl t-warn"> [Reloader] Evicting: app</span>
+          <span class="tl t-success"> [*] app reconstructed successfully.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── ARCHITECTURE INTERLUDE ─── -->
+  <section class="arch-section" id="architecture">
+    <div class="arch-inner">
+      <span class="section-label label-cyan">Architecture</span>
+      <h2>Three layers. One reload cycle.</h2>
+      <p class="arch-desc">Every file save flows through Kern's three-layer engine; Scanner, Evictor, Orchestrator in
+        precise order. No full restarts. No lost state.</p>
+      <div class="arch-diagram">
+        <img src="../assets/kern_architecture.svg" alt="Kern three-layer architecture: Scanner, Evictor, Orchestrator">
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── SPLIT SCREEN ─── -->
+  <div class="split-screen">
+
+    <!-- RIGHT: sticky terminal (rendered first for mobile order) -->
+    <div class="right-panel" aria-label="Live terminal output">
+      <div class="terminal-window">
+        <div class="term-header">
+          <div class="term-dots">
+            <span class="tdot tdot-red"></span>
+            <span class="tdot tdot-yellow"></span>
+            <span class="tdot tdot-green"></span>
+          </div>
+          <span class="term-title" id="term-section-label">kern</span>
+        </div>
+        <div class="term-content" id="terminal-content"></div>
+      </div>
+    </div>
+
+    <!-- LEFT: scrollable doc content -->
+    <div class="left-panel">
+
+      <section class="doc-section slide-in" id="problem" data-terminal="problem">
+        <span class="section-label label-red">The Problem</span>
+        <h2>Losing state on every save is death by a thousand restarts.</h2>
+        <p>When we were building terminal-based conversational functionality for an AI agent, every code change meant
+          killing the process. Session established all <strong>gone</strong>. You restart, reload, rebuild, and lose the
+          exact runtime
+          state you were debugging.</p>
+        <p>Standard hot-reloaders are web-framework specific. <code>flask --debug</code>, <code>uvicorn --reload</code>
+          — they restart your entire process. Kern was built for pure Python scripts where state matters.</p>
+        <div class="origin-note">
+          <span class="origin-icon">⚡</span>
+          <span>Born from Emmanuel Obolo's frustration building AI systems in the terminal. Co-architected with Abiodun
+            Kumuyi.</span>
+        </div>
+      </section>
+
+      <section class="doc-section slide-in" id="installation" data-terminal="installation">
+        <span class="section-label label-cyan">Installation</span>
+        <h2>Up and running in three commands.</h2>
+        <div class="steps">
+          <div class="step">
+            <span class="step-num">01</span>
+            <div class="step-body">
+              <strong>Clone the repository</strong>
+              <code class="code-block">git clone https://github.com/olugbeminiyi2000/Kern.git</code>
+            </div>
+          </div>
+          <div class="step">
+            <span class="step-num">02</span>
+            <div class="step-body">
+              <strong>Enter the directory</strong>
+              <code class="code-block">cd Kern</code>
+            </div>
+          </div>
+          <div class="step">
+            <span class="step-num">03</span>
+            <div class="step-body">
+              <strong>Install in editable mode</strong>
+              <code class="code-block">pip install -e .</code>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="doc-section slide-in" id="quickstart" data-terminal="quickstart">
+        <span class="section-label label-cyan">Quick Start</span>
+        <h2>Point kern at your script. It handles the rest.</h2>
+        <div class="qs-steps">
+          <div class="qs-step">
+            <div class="qs-num">1</div>
+            <div class="qs-body">
+              <strong>Start the engine on your main script</strong>
+              <p>Kern scans it with AST analysis, builds the full dependency graph of every local file it imports, and
+                starts watching all of them.</p>
+              <code class="code-block">kern run app.py</code>
+            </div>
+          </div>
+          <div class="qs-step">
+            <div class="qs-num">2</div>
+            <div class="qs-body">
+              <strong>Edit any connected file and save</strong>
+              <p>Change <code>app.py</code>, or any file it imports — <code>utils/helper.py</code>,
+                <code>models/user.py</code>, anything in the graph. Kern detects it and reloads only the affected
+                modules.
+              </p>
+            </div>
+          </div>
+          <div class="qs-step">
+            <div class="qs-num">3</div>
+            <div class="qs-body">
+              <strong>Define <code>run()</code> in your entry script <span style="font-weight:400;opacity:.7">(recommended)</span></strong>
+              <p>Every file your entry script imports — <code>utils/</code>, <code>models/</code>, anything in the
+                graph — is completely normal Python. No contract, no special functions. Kern reloads them
+                automatically when they change.</p>
+              <p>In your entry script, define <code>run()</code>. Kern calls it explicitly after every successful
+                reload. Think of it as <code>if&nbsp;__name__&nbsp;==&nbsp;"__main__":</code> but for
+                hot-reloading — it tells kern <em>what to execute</em> after each reload cycle.</p>
+              <pre class="code-pre"><code><span class="c-comment"># utils/greeter.py — plain Python, no run() needed</span>
+<span class="c-kw">def</span> <span class="c-fn">greet</span>(name):
+    <span class="c-kw">return</span> <span class="c-str">f"Hello, {name}!"</span>
+
+<span class="c-comment"># app.py — kern calls run() after every reload</span>
+<span class="c-kw">from</span> utils.greeter <span class="c-kw">import</span> greet
+
+<span class="c-kw">def</span> <span class="c-fn">run</span>():
+    print(<span class="c-fn">greet</span>(<span class="c-str">"World"</span>))</code></pre>
+              <p style="margin-top:.75rem"><strong>Kern works without <code>run()</code> too.</strong>
+                <code>importlib.reload()</code> re-executes module-level code on every reload regardless. But
+                <code>run()</code> gives you three things: the success message prints <em>before</em> your code
+                runs (not inside the import), a crash in <code>run()</code> doesn't fail the import itself, and
+                it follows Python convention of keeping side effects out of module scope.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="doc-section slide-in" id="scanner" data-terminal="scanner">
+        <span class="section-label label-blue">Layer 1 &mdash; Scanner</span>
+        <h2>AST analysis. Zero code executed during scan.</h2>
+        <p>The Scanner layer pairs <strong>DependencyTracker</strong> and <strong>FileWatcher</strong> to build a live
+          dependency map of your entire project — starting from your entry script and following every local import,
+          recursively — without ever executing any code.</p>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <span class="feature-dot" style="background:var(--blue)"></span>
+            <strong>Static AST Analysis</strong>
+            <p>Uses Python's <code>ast</code> module to map the full import tree — safe even when watched files have
+              syntax errors.</p>
+          </div>
+          <div class="feature-card">
+            <span class="feature-dot" style="background:var(--blue)"></span>
+            <strong>Absolute Path Resolution</strong>
+            <p>All files resolved to absolute paths, ensuring consistency regardless of working directory changes at
+              runtime.</p>
+          </div>
+          <div class="feature-card">
+            <span class="feature-dot" style="background:var(--blue)"></span>
+            <strong>Syntax Error Resilience</strong>
+            <p>Broken files remain in the watch list. Kern keeps running and recovers automatically once the error is
+              fixed.</p>
+          </div>
+          <div class="feature-card">
+            <span class="feature-dot" style="background:var(--blue)"></span>
+            <strong>Daemon Thread Watcher</strong>
+            <p>FileWatcher runs as a daemon thread — exits automatically with the main process. No cleanup required.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="doc-section slide-in" id="evictor" data-terminal="evictor">
+        <span class="section-label label-orange">Layer 2 &mdash; Evictor</span>
+        <h2>Surgical removal from <code>sys.modules</code>.</h2>
+        <p>The <strong>ModuleReloader</strong> recursively identifies every module that depends on the changed file,
+          then evicts them in the correct order — children before parents.</p>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <span class="feature-dot" style="background:var(--orange)"></span>
+            <strong>Recursive Dependent Mapping</strong>
+            <p>Iterative stack traversal (not recursion) resolves all transitive dependents — no stack overflow on deep
+              dependency chains.</p>
+          </div>
+          <div class="feature-card">
+            <span class="feature-dot" style="background:var(--orange)"></span>
+            <strong>Ordered Eviction</strong>
+            <p>Modules sorted by depth before removal. Children cleared before parents — prevents ghost imports where a
+              parent holds a stale child reference.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="doc-section slide-in" id="orchestrator" data-terminal="orchestrator">
+        <span class="section-label label-green">Layer 3 &mdash; Orchestrator</span>
+        <h2>The persistent loop that keeps kern alive.</h2>
+        <p>The <strong>Engine</strong> is the top-level coordinator. It runs a <code>while True</code> monitoring loop,
+          sequences the Scanner and Evictor on every detected change, and survives runtime errors in your script.</p>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <span class="feature-dot" style="background:var(--green)"></span>
+            <strong>Debounce Stabilization</strong>
+            <p>500ms debounce window prevents partial saves from firing premature reloads. Editors that batch writes
+              won't cause double-reloads.</p>
+          </div>
+          <div class="feature-card">
+            <span class="feature-dot" style="background:var(--green)"></span>
+            <strong>Error Recovery</strong>
+            <p>Runtime errors are caught and logged to <code>engine_error.log</code>. Kern stays alive — waiting for you
+              to fix the error and save again.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="doc-section slide-in" id="cli" data-terminal="cli">
+        <span class="section-label label-cyan">CLI Reference</span>
+        <h2>Two commands. That's it.</h2>
+        <div class="cli-table">
+          <div class="cli-row cli-head">
+            <span>Command</span>
+            <span>Description</span>
+          </div>
+          <div class="cli-row">
+            <code>kern run &lt;file&gt;</code>
+            <span>Start the hot-reload engine. Kern maps the full dependency graph of the target script and watches all
+              connected files. Calls <code>run()</code> after each reload if present.</span>
+          </div>
+          <div class="cli-row">
+            <code>kern info</code>
+            <span>Display Kern version, author, and co-architect information.</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="doc-section slide-in" id="config" data-terminal="config">
+        <span class="section-label label-cyan">Configuration</span>
+        <h2>Sensible defaults. No config file needed.</h2>
+        <p>Kern's behaviour is controlled by constants in the engine source. For most use cases the defaults are ideal.
+        </p>
+        <div class="config-table">
+          <div class="config-row config-head">
+            <span>Value</span>
+            <span>Default</span>
+            <span>Description</span>
+          </div>
+          <div class="config-row">
+            <code>DEBOUNCE_SECONDS</code>
+            <span class="cfg-val">0.5s</span>
+            <span>Instance attribute on <code>Engine</code> in <code>kern/core/engine.py</code>. Wait time after the last
+              file change before triggering a reload.</span>
+          </div>
+          <div class="config-row">
+            <code>time.sleep(0.3)</code>
+            <span class="cfg-val">0.3s</span>
+            <span>Hardcoded in <code>kern/tracker/watcher.py</code>. How often FileWatcher polls file modification
+              times.</span>
+          </div>
+          <div class="config-row">
+            <code>time.sleep(0.1)</code>
+            <span class="cfg-val">0.1s</span>
+            <span>Hardcoded in <code>kern/core/engine.py</code>. Main monitoring loop heartbeat — prevents
+              busy-waiting.</span>
+          </div>
+        </div>
+        <div class="config-note">
+          <strong><code>run()</code> is optional but recommended.</strong> Kern works without it —
+          <code>importlib.reload()</code> re-executes module-level code on every reload. But with
+          <code>run()</code>: the import completes and prints success <em>before</em> your code runs; a crash
+          inside <code>run()</code> is caught without failing the import; and side effects stay out of module
+          scope (Python convention). — <strong>Blocking note:</strong> kern runs your code synchronously. If
+          <code>run()</code> blocks on <code>input()</code> or a network call, the engine cannot process new
+          file changes until that call returns.
+        </div>
+      </section>
+
+    </div><!-- /left-panel -->
+  </div><!-- /split-screen -->
+
+  <!-- ─── FOOTER ─── -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-logo">
+        <img src="../assets/kern_logo.svg" alt="Kern" width="22" height="22">
+        <span>kern</span>
+        <span class="footer-version">v0.1.0</span>
+      </div>
+      <p class="footer-credit">Built by <strong>Emmanuel Obolo</strong> &middot; Co-architected with <strong>Abiodun
+          Kumuyi</strong></p>
+      <a href="https://github.com/olugbeminiyi2000/Kern" target="_blank" rel="noopener" class="footer-gh"
+        aria-label="GitHub repository">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <path
+            d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+        </svg>
+      </a>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
