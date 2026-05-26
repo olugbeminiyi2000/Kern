@@ -160,61 +160,67 @@ const LABELS = {
 };
 
 // ─── State ───
-let activeKey = null;
-const termContent = document.getElementById('terminal-content');
-const termLabel   = document.getElementById('term-section-label');
+let activeKey   = null;
+let scrollRafId = null;
+const termContent  = document.getElementById('terminal-content');
+const termLabel    = document.getElementById('term-section-label');
+const fabLabel     = document.getElementById('fab-label');
+const modalContent = document.getElementById('terminal-content-modal');
+const modalTitle   = document.getElementById('term-modal-title');
 
 // ─── Render terminal ───
 function renderTerminal(key) {
   if (!TERMINALS[key] || activeKey === key) return;
   activeKey = key;
 
-  termContent.style.opacity = '0';
+  const html = TERMINALS[key].map(([cls, text]) => {
+    const content = text === '' ? '&nbsp;' : text;
+    return cls
+      ? `<span class="tl ${cls}">${content}</span>`
+      : `<span class="tl">${content}</span>`;
+  }).join('');
 
-  setTimeout(() => {
-    const lines = TERMINALS[key];
-    const html  = lines.map(([cls, text]) => {
-      const content = text === '' ? '&nbsp;' : text;
-      return cls
-        ? `<span class="tl ${cls}">${content}</span>`
-        : `<span class="tl">${content}</span>`;
-    }).join('');
-
-    termContent.innerHTML = html;
-    if (termLabel) termLabel.textContent = LABELS[key] || 'kern';
-    termContent.style.opacity = '1';
-  }, 180);
+  // Update all targets instantly — no setTimeout, no opacity fade.
+  // A timer here gets cancelled every 16ms by rapid scroll and never fires.
+  termContent.innerHTML = html;
+  if (termLabel)    termLabel.textContent    = LABELS[key] || 'kern';
+  if (fabLabel)     fabLabel.textContent     = LABELS[key] || 'kern';
+  if (modalContent) modalContent.innerHTML   = html;
+  if (modalTitle)   modalTitle.textContent   = LABELS[key] || 'kern';
 }
 
-// ─── IntersectionObserver: terminal switching ───
-// Track every observed section's latest ratio so we always pick the most visible one,
-// not just whichever happened to fire in this batch of entries.
-const sectionRatios = new Map();
+// ─── Scroll-based terminal switching ───
+// Picks whichever [data-terminal] section's center is closest to the viewport center.
+// More reliable than IntersectionObserver thresholds for tall sections.
+function updateTerminalFromScroll() {
+  const vh  = window.innerHeight;
+  const mid = vh / 2;
+  let best     = null;
+  let bestDist = Infinity;
 
-const termObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    sectionRatios.set(entry.target, entry.intersectionRatio);
+  document.querySelectorAll('[data-terminal]').forEach(section => {
+    const rect = section.getBoundingClientRect();
+    if (rect.bottom < 0 || rect.top > vh) return; // off-screen — skip
+    const dist = Math.abs((rect.top + rect.height / 2) - mid);
+    if (dist < bestDist) { bestDist = dist; best = section; }
   });
 
-  let best = null;
-  let bestRatio = 0;
-  sectionRatios.forEach((ratio, el) => {
-    if (ratio > bestRatio) {
-      bestRatio = ratio;
-      best = el;
-    }
-  });
+  if (best) renderTerminal(best.dataset.terminal);
+}
 
-  if (best && bestRatio > 0) {
-    const key = best.dataset.terminal;
-    if (key) renderTerminal(key);
-  }
-}, {
-  threshold: [0, 0.1, 0.25, 0.5, 0.75],
-  rootMargin: '-80px 0px 0px 0px',
-});
+function scheduleTerminalUpdate() {
+  if (scrollRafId) cancelAnimationFrame(scrollRafId);
+  scrollRafId = requestAnimationFrame(updateTerminalFromScroll);
+}
 
-// ─── IntersectionObserver: slide-in animations ───
+// Desktop: left panel scrolls independently inside sticky split-screen
+const leftPanel = document.querySelector('.left-panel');
+leftPanel?.addEventListener('scroll', scheduleTerminalUpdate, { passive: true });
+
+// Mobile fallback: left panel is overflow:visible, so window scroll drives content
+window.addEventListener('scroll', scheduleTerminalUpdate, { passive: true });
+
+// ─── Slide-in animations ───
 const slideObserver = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
@@ -224,15 +230,10 @@ const slideObserver = new IntersectionObserver((entries) => {
   });
 }, { threshold: 0.08 });
 
-// ─── Attach observers ───
-document.querySelectorAll('[data-terminal]').forEach(el => {
-  sectionRatios.set(el, 0);
-  termObserver.observe(el);
-});
 document.querySelectorAll('.slide-in').forEach(el => slideObserver.observe(el));
 
-// ─── Boot: show first terminal ───
-renderTerminal('problem');
+// ─── Boot ───
+updateTerminalFromScroll();
 
 // ─── Mobile nav toggle ───
 const toggle     = document.querySelector('.nav-toggle');
@@ -260,4 +261,31 @@ document.addEventListener('click', (e) => {
     toggle?.setAttribute('aria-expanded', 'false');
     mobileMenu?.setAttribute('aria-hidden', 'true');
   }
+});
+
+// ─── Mobile terminal FAB + modal ───
+const termFab        = document.getElementById('term-fab');
+const termModal      = document.getElementById('term-modal');
+const termModalClose = document.getElementById('term-modal-close');
+
+function openModal() {
+  termModal?.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal() {
+  termModal?.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+termFab?.addEventListener('click', openModal);
+termModalClose?.addEventListener('click', closeModal);
+
+// close on backdrop tap (outside the sheet)
+termModal?.addEventListener('click', (e) => {
+  if (e.target === termModal) closeModal();
+});
+
+// close on Escape
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && termModal?.classList.contains('open')) closeModal();
 });

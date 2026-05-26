@@ -381,6 +381,36 @@
     </div>
   </footer>
 
+  <!-- ─── MOBILE: Terminal FAB ─── -->
+  <button class="term-fab" id="term-fab" aria-label="View terminal for current section">
+    <svg class="term-fab-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="4 17 10 11 4 5"></polyline>
+      <line x1="12" y1="19" x2="20" y2="19"></line>
+    </svg>
+    <span class="term-fab-label" id="fab-label">kern</span>
+  </button>
+
+  <!-- ─── MOBILE: Terminal modal sheet ─── -->
+  <div class="term-modal" id="term-modal" role="dialog" aria-modal="true">
+    <div class="term-modal-sheet">
+      <div class="term-modal-header">
+        <div class="term-dots">
+          <span class="tdot tdot-red"></span>
+          <span class="tdot tdot-yellow"></span>
+          <span class="tdot tdot-green"></span>
+        </div>
+        <span class="term-modal-title" id="term-modal-title">kern</span>
+        <button class="term-modal-close" id="term-modal-close" aria-label="Close terminal">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="term-modal-content" id="terminal-content-modal"></div>
+    </div>
+  </div>
+
   <script src="script.js"></script>
 </body>
 

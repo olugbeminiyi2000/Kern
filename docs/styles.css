@@ -38,7 +38,7 @@
 
 /* ─── Reset ─── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; font-size: 16px; }
+html { scroll-behavior: smooth; font-size: 16px; overflow-x: clip; overscroll-behavior: none; }
 
 body {
   background: var(--bg);
@@ -379,15 +379,24 @@ code {
   grid-template-areas: "left right";
   max-width: 1280px;
   margin: 0 auto;
-  align-items: start;
+  /* Whole split-screen sticks — left panel scrolls inside it */
+  position: sticky;
+  top: var(--nav-h);
+  height: calc(100vh - var(--nav-h));
 }
 
-/* ─── Left panel ─── */
+/* ─── Left panel — scrolls independently ─── */
 .left-panel {
   grid-area: left;
   border-right: 1px solid var(--border);
+  overflow-y: auto;
+  height: 100%;
   padding-bottom: 80px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
+.left-panel::-webkit-scrollbar { display: none; }
 
 .doc-section {
   padding: 60px 52px;
@@ -625,13 +634,10 @@ code {
 .config-note strong { color: var(--cyan); }
 
 /* ────────────────────────────────────────
-   RIGHT PANEL — sticky terminal
+   RIGHT PANEL — static within sticky split-screen
 ──────────────────────────────────────── */
 .right-panel {
   grid-area: right;
-  position: sticky;
-  top: var(--nav-h);
-  height: calc(100vh - var(--nav-h));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -682,7 +688,6 @@ code {
   display: flex;
   flex-direction: column;
   gap: 0;
-  transition: opacity 0.2s ease;
   overflow: hidden;
 }
 .term-content .tl { white-space: pre; }
@@ -749,33 +754,16 @@ code {
 /* ─── Mobile breakpoint ─── */
 @media (max-width: 860px) {
 
-  /* stack: terminal above content */
+  /* single-column block — terminal lives in modal, not in flow */
   .split-screen {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "right"
-      "left";
-  }
-
-  .left-panel {
-    border-right: none;
-  }
-
-  .right-panel {
+    display: block;
+    max-width: 100%;
     position: static;
     height: auto;
-    padding: 20px 20px 0;
-    display: block;
-    background: var(--bg-surface);
-    border-bottom: 1px solid var(--border);
   }
 
-  .terminal-window {
-    max-width: 100%;
-    box-shadow: none;
-  }
-
-  .term-content { min-height: 260px; font-size: 0.75rem; }
+  .left-panel  { border-right: none; width: 100%; overflow-y: visible; height: auto; }
+  .right-panel { display: none; }   /* hidden — accessed via FAB */
 
   /* show hamburger, hide links */
   .nav-links  { display: none; }
@@ -796,11 +784,128 @@ code {
   .footer-gh    { margin-left: 0; }
 }
 
+/* ─── Terminal FAB (mobile only) ─── */
+.term-fab { display: none; }
+
+@media (max-width: 860px) {
+  .term-fab {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    position: fixed;
+    bottom: 1.25rem;
+    right: 1.25rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--cyan-border);
+    border-radius: 100px;
+    padding: 9px 14px 9px 11px;
+    color: var(--cyan);
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    z-index: 150;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.55), 0 0 0 1px rgba(34,211,238,0.08);
+    transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+    user-select: none;
+  }
+  .term-fab:hover {
+    background: var(--cyan-bg);
+    border-color: var(--cyan);
+    box-shadow: 0 6px 28px rgba(0,0,0,0.6), 0 0 0 1px rgba(34,211,238,0.18);
+  }
+  .term-fab-icon { flex-shrink: 0; opacity: 0.8; }
+  .term-fab-label { white-space: nowrap; max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
+}
+
+/* ─── Terminal modal (mobile only) ─── */
+.term-modal { display: none; }
+
+@media (max-width: 860px) {
+  .term-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    background: rgba(1, 4, 9, 0.72);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    align-items: flex-end;
+  }
+  .term-modal.open { display: flex; }
+
+  .term-modal-sheet {
+    width: 100%;
+    max-height: 72vh;
+    background: var(--term-bg);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    border-radius: 16px 16px 0 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: sheet-up 0.28s var(--ease-out);
+  }
+  @keyframes sheet-up {
+    from { transform: translateY(100%); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+
+  .term-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: var(--bg-raised);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .term-modal-title {
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    color: var(--text-faint);
+    flex: 1;
+    text-align: center;
+    letter-spacing: 0.04em;
+    padding-right: 20px; /* offset for dots */
+  }
+  .term-modal-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 3px;
+    display: flex;
+    align-items: center;
+    border-radius: 4px;
+    transition: color 0.15s;
+    flex-shrink: 0;
+  }
+  .term-modal-close:hover { color: var(--text); }
+
+  .term-modal-content {
+    padding: 18px 20px;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    line-height: 1.9;
+    overflow-y: auto;
+    flex: 1;
+  }
+  .term-modal-content .tl { display: block; white-space: pre-wrap; word-break: break-word; }
+}
+
 /* ─── Small mobile ─── */
 @media (max-width: 480px) {
   .hero       { padding: 56px 20px 48px; }
   .arch-section { padding: 48px 20px; }
   .doc-section  { padding: 32px 20px; }
+
+  /* wrap long commands (e.g. git clone URL) instead of overflowing */
+  .code-block {
+    white-space: pre-wrap;
+    word-break: break-all;
+    overflow-x: visible;
+  }
 
   .hero-terminal  { max-width: 100%; }
   .term-body      { font-size: 0.75rem; padding: 14px 16px; }
